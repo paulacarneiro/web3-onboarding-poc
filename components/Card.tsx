@@ -30,7 +30,8 @@ export default function Card({
           onChange={handleChangeAction}
         >
           <option value="user balance">User balance</option>
-          <option value="transaction details">Transaction Details</option>
+          <option value="transaction details">Transaction details</option>
+          <option value="get ens name">Get ENS name</option>
         </select>
         <select
           name="network"
@@ -49,7 +50,7 @@ export default function Card({
           GO
         </button>
       </form>
-      <div className="text-gray-800 mt-12 text-center">{children}</div>
+      <div className="text-gray-700 mt-12 text-center">{children}</div>
     </div>
   );
 }

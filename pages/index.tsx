@@ -1,5 +1,6 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { toEth, toGwei } from "../lib/convertNumber";
+import { ethers } from "ethers";
 import Card from "../components/Card";
 import Connect from "../components/Connect";
 
@@ -26,7 +27,7 @@ export default function Home() {
         "transaction fee": `${toEth(0x5208 * 0x56f9e4dae)} ETH`,
       });
     } else if (error) {
-      setData({ error });
+      setData({ error: error.message });
     }
   };
 
@@ -41,7 +42,22 @@ export default function Home() {
         amount: `${toEth(data)} ETH`,
       });
     } else if (error) {
-      setData({ error });
+      setData({ error: error.message });
+    }
+  };
+
+  const getEnsName = async () => {
+    try {
+      if (!window.ethereum) return;
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      const data = await provider.lookupAddress(address);
+
+      if (data) {
+        setData({ "ENS name": data });
+      }
+    } catch (error) {
+      setData({ error: "not found" });
     }
   };
 
@@ -55,6 +71,9 @@ export default function Home() {
       case "transaction details":
         getTransactionDetails();
         break;
+      case "get ens name":
+        getEnsName();
+        break;
       default:
         break;
     }
@@ -67,7 +86,7 @@ export default function Home() {
   const handleChangeAction = (ev: ChangeEvent<HTMLSelectElement>) => setActionType(ev.target.value);
 
   return (
-    <div className="h-screen bg-gray-900">
+    <div className="h-screen bg-gray-900 font-studio text-gray-800 antialiased">
       <main className="p-10">
         {connected ? (
           <div className="w-[60rem] mx-auto mt-32">
