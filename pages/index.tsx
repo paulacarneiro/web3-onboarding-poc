@@ -1,4 +1,5 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
+import { toEth, toGwei } from "../lib/convertNumber";
 import Card from "../components/Card";
 import Connect from "../components/Connect";
 
@@ -11,10 +12,52 @@ export default function Home() {
 
   const connect = () => setConnected(true);
 
-  const handleSubmit = (ev: FormEvent, address: string, type: string, network: string) => {
+  const getTransactionDetails = async () => {
+    const res = await fetch(`/api/transaction?address=${address}&network=${network}`);
+    const { data, error } = await res.json();
+
+    if (data) {
+      setData({
+        hash: data.hash,
+        value: `toEth(data.value) ETH
+        `,
+        from: data.from,
+        to: data.to,
+        "transaction fee": `${toEth(0x5208 * 0x56f9e4dae)} ETH`,
+      });
+    } else if (error) {
+      setData({ error });
+    }
+  };
+
+  const getUserBalance = async () => {
+    const res = await fetch(`/api/userBalance?address=${address}&network=${network}`);
+    const { data, error } = await res.json();
+
+    console.log(toEth(data));
+
+    if (data) {
+      setData({
+        amount: `${toEth(data)} ETH`,
+      });
+    } else if (error) {
+      setData({ error });
+    }
+  };
+
+  const handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
 
-    setData({ balance: "5.439843 ETH" });
+    switch (actionType) {
+      case "user balance":
+        getUserBalance();
+        break;
+      case "transaction details":
+        getTransactionDetails();
+        break;
+      default:
+        break;
+    }
   };
 
   const handleChangeAddress = (ev: ChangeEvent<HTMLInputElement>) => setAddress(ev.target.value);
@@ -36,10 +79,11 @@ export default function Home() {
             >
               <div>
                 {Object.keys(data).map((key, idx) => (
-                <p key={idx}>
-                  {key} : {data[key]}
-                </p>
-              ))}
+                  <p className="mb-2" key={idx}>
+                    {key} : {data[key]}
+                  </p>
+                ))}
+              </div>
             </Card>
           </div>
         ) : (
