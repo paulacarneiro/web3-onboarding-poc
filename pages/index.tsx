@@ -9,6 +9,7 @@ export default function Home() {
   const [address, setAddress] = useState<string>("");
   const [actionType, setActionType] = useState<string>("user balance");
   const [network, setNetwork] = useState<string>("mainnet");
+  const [tokenAddress, setTokenAddress] = useState<string>("");
   const [data, setData] = useState<{ [key: string]: string | number }>({});
 
   const connect = () => setConnected(true);
@@ -33,8 +34,6 @@ export default function Home() {
   const getUserBalance = async () => {
     const res = await fetch(`/api/userBalance?address=${address}&network=${network}`);
     const { data, error } = await res.json();
-
-    console.log(toEth(data));
 
     if (data) {
       setData({
@@ -74,6 +73,31 @@ export default function Home() {
     }
   };
 
+  const checkNft = async () => {
+    const res = await fetch(
+      `/api/nft?address=${address}&tokenAddress=${tokenAddress}&network=${network}`
+    );
+
+    const { data, error } = await res.json();
+
+    if (data) {
+      setData(
+        data.reduce((dataObj: any, item: any) => {
+          return {
+            ...dataObj,
+            tokenSymbol: item.tokenSymbol,
+            tokenName: item.tokenName,
+            [item.tokenID]: `${new Date(Number(item.timeStamp) * 1000).toLocaleDateString()}, ${
+              item.hash
+            }`,
+          };
+        }, {})
+      );
+    } else if (error) {
+      setData({ error: error as string });
+    }
+  };
+
   const handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
 
@@ -90,12 +114,18 @@ export default function Home() {
       case ActionTypes.CHECK_ADDRESS:
         checkAddress();
         break;
+      case ActionTypes.HAS_NFT:
+        checkNft();
+        break;
       default:
         break;
     }
   };
 
   const handleChangeAddress = (ev: ChangeEvent<HTMLInputElement>) => setAddress(ev.target.value);
+
+  const handleChangeTokenAddress = (ev: ChangeEvent<HTMLInputElement>) =>
+    setTokenAddress(ev.target.value);
 
   const handleChangeNetwork = (ev: ChangeEvent<HTMLSelectElement>) => setNetwork(ev.target.value);
 
@@ -111,6 +141,8 @@ export default function Home() {
               handleChangeNetwork={handleChangeNetwork}
               handleChangeAction={handleChangeAction}
               handleChangeAddress={handleChangeAddress}
+              handleChangeTokenAddress={handleChangeTokenAddress}
+              extraInput={actionType === ActionTypes.HAS_NFT}
             >
               <div>
                 {Object.keys(data).map((key, idx) => (
