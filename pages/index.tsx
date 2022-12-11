@@ -1,5 +1,5 @@
 import { useState, FormEvent, ChangeEvent } from "react";
-import { toEth, toGwei } from "../lib/convertNumber";
+import { weiToEth } from "../lib/convertEth";
 import { ethers } from "ethers";
 import Card, { ActionTypes } from "../components/Card";
 import Connect from "../components/Connect";
@@ -20,11 +20,10 @@ export default function Home() {
     if (data) {
       setData({
         hash: data.hash,
-        value: `toEth(data.value) ETH
-        `,
+        value: `${weiToEth(data.value)} ETH`,
         from: data.from,
         to: data.to,
-        "transaction fee": `${toEth(0x5208 * 0x56f9e4dae)} ETH`,
+        "transaction fee": `${weiToEth(0x5208 * 0x56f9e4dae)} ETH`,
       });
     } else if (error) {
       setData({ error: error.message });
@@ -39,7 +38,7 @@ export default function Home() {
 
     if (data) {
       setData({
-        amount: `${toEth(data)} ETH`,
+        amount: `${weiToEth(data)} ETH`,
       });
     } else if (error) {
       setData({ error: error.message });
@@ -55,9 +54,11 @@ export default function Home() {
 
       if (data) {
         setData({ "ENS name": data });
+      } else {
+        setData({ "ENS name": "not defined" });
       }
-    } catch (error) {
-      setData({ error: "not found" });
+    } catch (e) {
+      setData({ error: "address not found" });
     }
   };
 
@@ -114,7 +115,7 @@ export default function Home() {
               <div>
                 {Object.keys(data).map((key, idx) => (
                   <p className="mb-2" key={idx}>
-                    {key} : {data[key]}
+                    {key}: {data[key]}
                   </p>
                 ))}
               </div>

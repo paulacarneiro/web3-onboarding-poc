@@ -9,11 +9,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `${baseUrl}/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.NEXT_APP_ETHERSCAN_API_KEY}`
   );
 
-  const { result, error } = await response.json();
+  const { status, message, result } = await response.json();
 
-  if (result) {
+  if (status === 1) {
     res.status(200).json({ data: result });
-  } else if (error) {
-    res.status(500).send({ error });
+  } else {
+    res.status(500).send({ error: message });
   }
 }
