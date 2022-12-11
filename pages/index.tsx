@@ -1,7 +1,7 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { toEth, toGwei } from "../lib/convertNumber";
 import { ethers } from "ethers";
-import Card from "../components/Card";
+import Card, { ActionTypes } from "../components/Card";
 import Connect from "../components/Connect";
 
 export default function Home() {
@@ -61,18 +61,33 @@ export default function Home() {
     }
   };
 
+  const checkAddress = async () => {
+    try {
+      const data = await ethers.utils.getAddress(address);
+
+      if (data) {
+        setData({ address: "exists" });
+      }
+    } catch (e) {
+      setData({ error: "address not found" });
+    }
+  };
+
   const handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
 
     switch (actionType) {
-      case "user balance":
+      case ActionTypes.USER_BALANCE:
         getUserBalance();
         break;
-      case "transaction details":
+      case ActionTypes.TRANSACTION_DETAILS:
         getTransactionDetails();
         break;
-      case "get ens name":
+      case ActionTypes.ENS_NAME:
         getEnsName();
+        break;
+      case ActionTypes.CHECK_ADDRESS:
+        checkAddress();
         break;
       default:
         break;

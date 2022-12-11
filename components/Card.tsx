@@ -1,4 +1,11 @@
-import { ChangeEvent, FormEvent, ReactNode, useState } from "react";
+import { ChangeEvent, FormEvent, ReactNode } from "react";
+
+export enum ActionTypes {
+  USER_BALANCE = "user balance",
+  TRANSACTION_DETAILS = "transaction details",
+  ENS_NAME = "ens name",
+  CHECK_ADDRESS = "check address",
+}
 
 export default function Card({
   children,
@@ -29,9 +36,10 @@ export default function Card({
           className="w-fit bg-violet-100 rounded-full text-gray-700 px-2 py-1"
           onChange={handleChangeAction}
         >
-          <option value="user balance">User balance</option>
-          <option value="transaction details">Transaction details</option>
-          <option value="get ens name">Get ENS name</option>
+          <option value={ActionTypes.USER_BALANCE}>User balance</option>
+          <option value={ActionTypes.TRANSACTION_DETAILS}>Transaction details</option>
+          <option value={ActionTypes.ENS_NAME}>Get ENS name</option>
+          <option value={ActionTypes.CHECK_ADDRESS}>Check address</option>
         </select>
         <select
           name="network"
