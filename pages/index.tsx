@@ -1,7 +1,7 @@
 import { useState, FormEvent, ChangeEvent } from "react";
-import { toEth, toGwei } from "../lib/convertNumber";
+import { weiToEth } from "../lib/convertEth";
 import { ethers } from "ethers";
-import Card from "../components/Card";
+import Card, { ActionTypes } from "../components/Card";
 import Connect from "../components/Connect";
 
 export default function Home() {
@@ -9,6 +9,7 @@ export default function Home() {
   const [address, setAddress] = useState<string>("");
   const [actionType, setActionType] = useState<string>("user balance");
   const [network, setNetwork] = useState<string>("mainnet");
+  const [tokenAddress, setTokenAddress] = useState<string>("");
   const [data, setData] = useState<{ [key: string]: string | number }>({});
 
   const connect = () => setConnected(true);
@@ -20,11 +21,10 @@ export default function Home() {
     if (data) {
       setData({
         hash: data.hash,
-        value: `toEth(data.value) ETH
-        `,
+        value: `${weiToEth(data.value)} ETH`,
         from: data.from,
         to: data.to,
-        "transaction fee": `${toEth(0x5208 * 0x56f9e4dae)} ETH`,
+        "transaction fee": `${weiToEth(0x5208 * 0x56f9e4dae)} ETH`,
       });
     } else if (error) {
       setData({ error: error.message });
@@ -35,11 +35,9 @@ export default function Home() {
     const res = await fetch(`/api/userBalance?address=${address}&network=${network}`);
     const { data, error } = await res.json();
 
-    console.log(toEth(data));
-
     if (data) {
       setData({
-        amount: `${toEth(data)} ETH`,
+        amount: `${weiToEth(data)} ETH`,
       });
     } else if (error) {
       setData({ error: error.message });
@@ -55,9 +53,48 @@ export default function Home() {
 
       if (data) {
         setData({ "ENS name": data });
+      } else {
+        setData({ "ENS name": "not defined" });
       }
-    } catch (error) {
-      setData({ error: "not found" });
+    } catch (e) {
+      setData({ error: "address not found" });
+    }
+  };
+
+  const checkAddress = async () => {
+    try {
+      const data = await ethers.utils.getAddress(address);
+
+      if (data) {
+        setData({ address: "exists" });
+      }
+    } catch (e) {
+      setData({ error: "address not found" });
+    }
+  };
+
+  const checkNft = async () => {
+    const res = await fetch(
+      `/api/nft?address=${address}&tokenAddress=${tokenAddress}&network=${network}`
+    );
+
+    const { data, error } = await res.json();
+
+    if (data) {
+      setData(
+        data.reduce((dataObj: any, item: any) => {
+          return {
+            ...dataObj,
+            tokenSymbol: item.tokenSymbol,
+            tokenName: item.tokenName,
+            [item.tokenID]: `${new Date(Number(item.timeStamp) * 1000).toLocaleDateString()}, ${
+              item.hash
+            }`,
+          };
+        }, {})
+      );
+    } else if (error) {
+      setData({ error: error as string });
     }
   };
 
@@ -65,14 +102,20 @@ export default function Home() {
     ev.preventDefault();
 
     switch (actionType) {
-      case "user balance":
+      case ActionTypes.USER_BALANCE:
         getUserBalance();
         break;
-      case "transaction details":
+      case ActionTypes.TRANSACTION_DETAILS:
         getTransactionDetails();
         break;
-      case "get ens name":
+      case ActionTypes.ENS_NAME:
         getEnsName();
+        break;
+      case ActionTypes.CHECK_ADDRESS:
+        checkAddress();
+        break;
+      case ActionTypes.HAS_NFT:
+        checkNft();
         break;
       default:
         break;
@@ -80,6 +123,9 @@ export default function Home() {
   };
 
   const handleChangeAddress = (ev: ChangeEvent<HTMLInputElement>) => setAddress(ev.target.value);
+
+  const handleChangeTokenAddress = (ev: ChangeEvent<HTMLInputElement>) =>
+    setTokenAddress(ev.target.value);
 
   const handleChangeNetwork = (ev: ChangeEvent<HTMLSelectElement>) => setNetwork(ev.target.value);
 
@@ -95,11 +141,13 @@ export default function Home() {
               handleChangeNetwork={handleChangeNetwork}
               handleChangeAction={handleChangeAction}
               handleChangeAddress={handleChangeAddress}
+              handleChangeTokenAddress={handleChangeTokenAddress}
+              extraInput={actionType === ActionTypes.HAS_NFT}
             >
               <div>
                 {Object.keys(data).map((key, idx) => (
                   <p className="mb-2" key={idx}>
-                    {key} : {data[key]}
+                    {key}: {data[key]}
                   </p>
                 ))}
               </div>

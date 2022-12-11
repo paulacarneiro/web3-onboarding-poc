@@ -1,4 +1,12 @@
-import { ChangeEvent, FormEvent, ReactNode, useState } from "react";
+import { ChangeEvent, FormEvent, ReactNode } from "react";
+
+export enum ActionTypes {
+  USER_BALANCE = "user balance",
+  TRANSACTION_DETAILS = "transaction details",
+  ENS_NAME = "ens name",
+  CHECK_ADDRESS = "check address",
+  HAS_NFT = "has nft",
+}
 
 export default function Card({
   children,
@@ -6,12 +14,16 @@ export default function Card({
   handleChangeAction,
   handleChangeNetwork,
   handleChangeAddress,
+  handleChangeTokenAddress,
+  extraInput,
 }: {
   children?: ReactNode;
   handleSubmit: (ev: FormEvent<HTMLFormElement>) => void;
   handleChangeAction: (ev: ChangeEvent<HTMLSelectElement>) => void;
   handleChangeNetwork: (ev: ChangeEvent<HTMLSelectElement>) => void;
   handleChangeAddress: (ev: ChangeEvent<HTMLInputElement>) => void;
+  handleChangeTokenAddress: (ev: ChangeEvent<HTMLInputElement>) => void;
+  extraInput: boolean;
 }) {
   return (
     <div className="bg-gradient-to-r from-pink-200 via-purple-300 to-indigo-400 py-7 px-9 rounded-md text-gray-800 text-xl">
@@ -23,15 +35,26 @@ export default function Card({
           placeholder="search by address or tx hash..."
           onChange={handleChangeAddress}
         />
+        {extraInput && (
+          <input
+            required
+            className="w-full h-10 bg-violet-100 rounded text-gray-700 pl-2"
+            type="text"
+            placeholder="token address..."
+            onChange={handleChangeTokenAddress}
+          />
+        )}
         <select
           name="action type"
           id="action type"
           className="w-fit bg-violet-100 rounded-full text-gray-700 px-2 py-1"
           onChange={handleChangeAction}
         >
-          <option value="user balance">User balance</option>
-          <option value="transaction details">Transaction details</option>
-          <option value="get ens name">Get ENS name</option>
+          <option value={ActionTypes.USER_BALANCE}>User balance</option>
+          <option value={ActionTypes.TRANSACTION_DETAILS}>Transaction details</option>
+          <option value={ActionTypes.ENS_NAME}>Get ENS name</option>
+          <option value={ActionTypes.CHECK_ADDRESS}>Check address</option>
+          <option value={ActionTypes.HAS_NFT}>Check NFT</option>
         </select>
         <select
           name="network"

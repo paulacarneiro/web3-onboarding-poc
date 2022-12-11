@@ -1,7 +1,8 @@
-export function toEth(amount: string | number) {
+export function weiToEth(amount: string | number) {
   return toDecimals(amount as number);
 }
-export function toGwei(amount: string | number) {
+
+export function weiToGwei(amount: string | number) {
   return toDecimals(amount as number, 9);
 }
 
